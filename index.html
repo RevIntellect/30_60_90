@@ -1,1155 +1,659 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>30-60-90 Day Plan | Aaron Wolf</title>
-  <style>
-    /* ── Reset & Variables ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg:        #0f1117;
-      --surface:   #1a1d2e;
-      --card:      #22263a;
-      --border:    #2e3250;
-      --accent1:   #4f8ef7;  /* blue  – 30-day */
-      --accent2:   #7c5cbf;  /* purple – 60-day */
-      --accent3:   #2eb872;  /* green  – 90-day */
-      --gold:      #f7c948;
-      --text:      #e8eaf2;
-      --muted:     #8890b0;
-      --radius:    12px;
-      --transition: 0.25s ease;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ── Header ── */
-    header {
-      background: linear-gradient(135deg, #111527 0%, #1a1d2e 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 28px 32px 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(8px);
-    }
-    .header-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: flex;
-      align-items: flex-end;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-    .header-badge {
-      background: linear-gradient(135deg, var(--accent1), var(--accent2));
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      padding: 4px 12px;
-      border-radius: 100px;
-      white-space: nowrap;
-    }
-    .header-titles h1 {
-      font-size: clamp(1.4rem, 3vw, 2rem);
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -0.5px;
-    }
-    .header-titles p {
-      color: var(--muted);
-      font-size: 0.9rem;
-      margin-top: 4px;
-    }
-    .header-titles p span {
-      color: var(--gold);
-      font-weight: 600;
-    }
-
-    /* ── Main Layout ── */
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 32px 24px 64px;
-    }
-
-    /* ── Overall Progress ── */
-    .overall-progress {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px 28px;
-      margin-bottom: 32px;
-    }
-    .overall-progress h2 {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
-    .progress-phases {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-    .phase-stat {
-      text-align: center;
-    }
-    .phase-stat-label {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .phase-stat-pct {
-      font-size: 1.6rem;
-      font-weight: 800;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
-    .pct-30 { color: var(--accent1); }
-    .pct-60 { color: var(--accent2); }
-    .pct-90 { color: var(--accent3); }
-
-    .progress-bar-wrap {
-      background: var(--card);
-      border-radius: 100px;
-      height: 6px;
-      overflow: hidden;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      border-radius: 100px;
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .fill-30 { background: var(--accent1); }
-    .fill-60 { background: var(--accent2); }
-    .fill-90 { background: var(--accent3); }
-
-    /* ── KPI Cards ── */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-    .kpi-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-    }
-    .kpi-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-    }
-    .kpi-card.k1::before { background: var(--accent1); }
-    .kpi-card.k2::before { background: var(--accent2); }
-    .kpi-card.k3::before { background: var(--accent3); }
-    .kpi-card.k4::before { background: var(--gold); }
-    .kpi-icon {
-      font-size: 1.6rem;
-      margin-bottom: 8px;
-    }
-    .kpi-value {
-      font-size: 1.8rem;
-      font-weight: 800;
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-    .kpi-label {
-      font-size: 0.78rem;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    /* ── Tab Nav ── */
-    .tab-nav {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-    .tab-btn {
-      padding: 10px 24px;
-      border-radius: 100px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition);
-      user-select: none;
-    }
-    .tab-btn:hover { color: var(--text); border-color: var(--muted); }
-    .tab-btn.active-30 { background: var(--accent1); border-color: var(--accent1); color: #fff; }
-    .tab-btn.active-60 { background: var(--accent2); border-color: var(--accent2); color: #fff; }
-    .tab-btn.active-90 { background: var(--accent3); border-color: var(--accent3); color: #fff; }
-
-    /* ── Phase Panel ── */
-    .phase-panel { display: none; }
-    .phase-panel.active { display: block; }
-
-    .phase-header {
-      border-radius: var(--radius);
-      padding: 24px 28px;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: flex-start;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    .phase-header.p30 { background: linear-gradient(135deg, #1a263f, #1a1d2e); border: 1px solid #2a3a5e; }
-    .phase-header.p60 { background: linear-gradient(135deg, #221a3f, #1a1d2e); border: 1px solid #3a2a5e; }
-    .phase-header.p90 { background: linear-gradient(135deg, #1a3328, #1a1d2e); border: 1px solid #2a5040; }
-
-    .phase-number {
-      font-size: 3rem;
-      font-weight: 900;
-      line-height: 1;
-      opacity: 0.12;
-      pointer-events: none;
-      user-select: none;
-    }
-    .phase-number.n30 { color: var(--accent1); }
-    .phase-number.n60 { color: var(--accent2); }
-    .phase-number.n90 { color: var(--accent3); }
-
-    .phase-meta { flex: 1; min-width: 220px; }
-    .phase-meta h2 {
-      font-size: 1.35rem;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-    .phase-meta p {
-      color: var(--muted);
-      font-size: 0.875rem;
-      line-height: 1.6;
-    }
-    .phase-tag {
-      display: inline-block;
-      padding: 3px 12px;
-      border-radius: 100px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-    .tag-30 { background: rgba(79,142,247,0.15); color: var(--accent1); }
-    .tag-60 { background: rgba(124,92,191,0.15); color: var(--accent2); }
-    .tag-90 { background: rgba(46,184,114,0.15); color: var(--accent3); }
-
-    /* ── Category Sections ── */
-    .category {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 16px;
-      overflow: hidden;
-    }
-    .category-header {
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: var(--transition);
-      user-select: none;
-    }
-    .category-header:hover { background: rgba(255,255,255,0.03); }
-    .category-icon { font-size: 1.2rem; }
-    .category-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      flex: 1;
-    }
-    .category-count {
-      font-size: 0.75rem;
-      color: var(--muted);
-      background: var(--card);
-      padding: 2px 10px;
-      border-radius: 100px;
-    }
-    .category-chevron {
-      color: var(--muted);
-      transition: transform var(--transition);
-      font-size: 0.8rem;
-    }
-    .category.open .category-chevron { transform: rotate(180deg); }
-    .category-body {
-      display: none;
-      padding: 0 20px 16px;
-    }
-    .category.open .category-body { display: block; }
-
-    /* ── Checklist Items ── */
-    .checklist { list-style: none; }
-    .checklist li {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 9px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .checklist li:last-child { border-bottom: none; }
-    .checklist li:hover { color: #fff; }
-
-    .check-box {
-      width: 20px;
-      height: 20px;
-      min-width: 20px;
-      border-radius: 6px;
-      border: 2px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: var(--transition);
-      margin-top: 1px;
-    }
-    .check-box svg { display: none; width: 12px; height: 12px; }
-    .checklist li.done .check-box svg { display: block; }
-
-    .phase-panel[data-phase="30"] .checklist li.done .check-box {
-      background: var(--accent1); border-color: var(--accent1);
-    }
-    .phase-panel[data-phase="60"] .checklist li.done .check-box {
-      background: var(--accent2); border-color: var(--accent2);
-    }
-    .phase-panel[data-phase="90"] .checklist li.done .check-box {
-      background: var(--accent3); border-color: var(--accent3);
-    }
-
-    .check-text { font-size: 0.875rem; line-height: 1.5; }
-    .checklist li.done .check-text { text-decoration: line-through; color: var(--muted); }
-
-    .item-tag {
-      margin-left: auto;
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 100px;
-      white-space: nowrap;
-      align-self: center;
-    }
-    .tag-ai   { background: rgba(247,201,72,0.1); color: var(--gold); }
-    .tag-sell { background: rgba(46,184,114,0.1); color: var(--accent3); }
-    .tag-ops  { background: rgba(79,142,247,0.1); color: var(--accent1); }
-    .tag-lead { background: rgba(255,120,120,0.1); color: #ff9090; }
-
-    /* ── Reset Button ── */
-    .reset-btn {
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 7px 16px;
-      border-radius: 100px;
-      font-size: 0.78rem;
-      cursor: pointer;
-      transition: var(--transition);
-      margin-top: 16px;
-    }
-    .reset-btn:hover { color: var(--text); border-color: var(--muted); }
-
-    /* ── Footer ── */
-    footer {
-      text-align: center;
-      padding: 24px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      border-top: 1px solid var(--border);
-    }
-    footer a { color: var(--accent1); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-
-    /* ── Pin Button ── */
-    .pin-btn {
-      font-size: 0.85rem;
-      cursor: pointer;
-      opacity: 0.3;
-      transition: var(--transition);
-      user-select: none;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    .pin-btn:hover { opacity: 0.7; }
-    .checklist li.pinned .pin-btn { opacity: 1; filter: drop-shadow(0 0 3px var(--gold)); }
-    .checklist li.pinned {
-      border-left: 3px solid var(--gold);
-      padding-left: 8px;
-      background: rgba(247,201,72,0.04);
-      border-radius: 4px;
-    }
-
-    /* ── Action Buttons (header) ── */
-    .header-actions {
-      display: flex;
-      gap: 8px;
-      margin-left: auto;
-      align-items: center;
-    }
-    .action-btn {
-      padding: 8px 16px;
-      border-radius: 100px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition);
-      white-space: nowrap;
-    }
-    .action-btn:hover { color: var(--text); border-color: var(--muted); }
-    .action-btn.primary {
-      background: linear-gradient(135deg, var(--accent1), var(--accent2));
-      border-color: transparent;
-      color: #fff;
-    }
-    .action-btn.primary:hover { opacity: 0.9; }
-
-    /* ── Notes Modal ── */
-    .notes-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-    .notes-overlay.hidden { display: none; }
-    .notes-modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      max-width: 700px;
-      width: 100%;
-      max-height: 80vh;
-      overflow-y: auto;
-      padding: 32px;
-    }
-    .notes-modal h2 {
-      font-size: 1.3rem;
-      margin-bottom: 4px;
-    }
-    .notes-modal .notes-date {
-      color: var(--muted);
-      font-size: 0.8rem;
-      margin-bottom: 20px;
-    }
-    .notes-modal pre {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 20px;
-      font-size: 0.82rem;
-      line-height: 1.7;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-    }
-    .notes-modal-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 16px;
-      justify-content: flex-end;
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 640px) {
-      header { padding: 20px 16px; }
-      main { padding: 20px 16px 48px; }
-      .progress-phases { grid-template-columns: 1fr; gap: 12px; }
-      .phase-header { padding: 16px; }
-      .header-inner { flex-direction: column; align-items: flex-start; }
-      .header-actions { margin-left: 0; width: 100%; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aaron Wolf — 30/60/90 Day Onboarding Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        amber_ws: { light: '#FEF3C7', DEFAULT: '#F59E0B', dark: '#B45309' },
+                        blue_ws: { light: '#DBEAFE', DEFAULT: '#3B82F6', dark: '#1D4ED8' },
+                        slate_ws: { light: '#E2E8F0', DEFAULT: '#64748B', dark: '#475569' },
+                        green_ws: { light: '#D1FAE5', DEFAULT: '#10B981', dark: '#047857' },
+                        coral_ws: { light: '#FEE2E2', DEFAULT: '#F97066', dark: '#DC2626' },
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Prevent flash of wrong theme -->
+    <script>
+        (function(){
+            const saved = localStorage.getItem('aw-theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (saved === 'dark' || (!saved && prefersDark)) document.documentElement.classList.add('dark');
+        })();
+    </script>
+    <style>
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.4)} }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes glow { 0%,100%{box-shadow:0 0 8px rgba(59,130,246,0.3)} 50%{box-shadow:0 0 20px rgba(59,130,246,0.5)} }
+        .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+        .task-card-hover { transition: all 0.2s ease; }
+        .task-card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.12); }
+        .progress-bar-animated { transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        .focus-glow { animation: glow 2s ease-in-out infinite; }
+        input[type="checkbox"] { accent-color: #3B82F6; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 99px; }
+        .done-card { opacity: 0.55; }
+        .done-card .card-text { text-decoration: line-through; }
+        /* Mobile: horizontal-scroll phase tabs */
+        .phase-tabs-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .phase-tabs-scroll::-webkit-scrollbar { display: none; }
+        /* Safe-area padding for notched iPhones */
+        @supports (padding: env(safe-area-inset-bottom)) {
+            body { padding-bottom: env(safe-area-inset-bottom); }
+            header { padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right)); }
+        }
+        /* Touch-friendly tap targets */
+        @media (max-width: 640px) {
+            .task-card-hover { min-height: 72px; }
+            .pin-btn { opacity: 1 !important; width: 32px !important; height: 32px !important; }
+            .ws-filter { padding: 6px 12px; }
+        }
+        /* Dark mode transition */
+        html.dark { color-scheme: dark; }
+        body, .bg-white, .bg-slate-50, #modal, #modalOverlay { transition: background-color 0.3s ease, color 0.3s ease; }
+        /* Dark mode toggle button */
+        .theme-toggle { position: relative; width: 52px; height: 28px; border-radius: 99px; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); transition: all 0.3s ease; }
+        .theme-toggle .toggle-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform 0.3s ease; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        html.dark .theme-toggle .toggle-knob { transform: translateX(24px); }
+        .theme-toggle:hover { border-color: rgba(255,255,255,0.4); }
+        /* Dark mode scrollbar */
+        html.dark ::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
 </head>
-<body>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 min-h-screen">
 
-<!-- ── HEADER ── -->
-<header>
-  <div class="header-inner">
-    <div>
-      <span class="header-badge">Onboarding Plan</span>
+<!-- ─── HEADER ───────────────────────────────────────────────────── -->
+<header class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white sticky top-0 z-50 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Aaron Wolf: 30-60-90 Day Onboarding Plan</h1>
+                <p class="text-slate-400 text-sm mt-1 max-w-xl">Operationalize Gen AI &rarr; Top-of-Funnel Pipeline &amp; Expert-Level Sales Enablement</p>
+            </div>
+            <div class="flex items-center gap-6 sm:gap-8">
+                <div class="text-center">
+                    <div class="text-2xl sm:text-3xl font-bold text-emerald-400" id="completedCount">0</div>
+                    <div class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400">Done</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl sm:text-3xl font-bold text-blue-400" id="inProgressCount">0</div>
+                    <div class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400">Active</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl sm:text-3xl font-bold text-slate-400" id="pendingCount">0</div>
+                    <div class="text-[10px] sm:text-xs uppercase tracking-wider text-slate-400">To Do</div>
+                </div>
+                <button class="theme-toggle ml-2" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+                    <span class="toggle-knob" id="themeIcon">&#9728;</span>
+                </button>
+            </div>
+        </div>
     </div>
-    <div class="header-titles">
-      <h1>30 · 60 · 90 Day Plan</h1>
-      <p>Aaron Wolf &nbsp;·&nbsp; <span>Operationalize Gen AI → ToFu Pipeline &amp; Sales Enablement</span></p>
-    </div>
-    <div class="header-actions">
-      <button class="action-btn primary" onclick="openNotesModal()">📝 Generate Notes</button>
-      <button class="action-btn" onclick="exportDocx()">📄 Export DOCX</button>
-    </div>
-  </div>
 </header>
 
-<!-- ── MAIN ── -->
-<main>
-
-  <!-- Overall Progress -->
-  <div class="overall-progress">
-    <h2>Overall Progress</h2>
-    <div class="progress-phases">
-      <div class="phase-stat">
-        <div class="phase-stat-label">Days 1–30</div>
-        <div class="phase-stat-pct pct-30" id="pct30">0%</div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill fill-30" id="bar30" style="width:0%"></div>
+<!-- ─── PROGRESS BAR ─────────────────────────────────────────────── -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 relative z-50">
+    <div class="bg-white dark:bg-slate-800 rounded-xl shadow-lg px-5 py-4 flex items-center gap-4">
+        <span class="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Overall Progress</span>
+        <div class="flex-1 h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 progress-bar-animated" id="progressFill" style="width:0%"></div>
         </div>
-      </div>
-      <div class="phase-stat">
-        <div class="phase-stat-label">Days 31–60</div>
-        <div class="phase-stat-pct pct-60" id="pct60">0%</div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill fill-60" id="bar60" style="width:0%"></div>
-        </div>
-      </div>
-      <div class="phase-stat">
-        <div class="phase-stat-label">Days 61–90</div>
-        <div class="phase-stat-pct pct-90" id="pct90">0%</div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill fill-90" id="bar90" style="width:0%"></div>
-        </div>
-      </div>
+        <span class="text-sm font-bold text-blue-600 dark:text-blue-400 min-w-[40px] text-right" id="progressPct">0%</span>
     </div>
-  </div>
-
-  <!-- KPI Cards -->
-  <div class="kpi-grid">
-    <div class="kpi-card k1">
-      <div class="kpi-icon">🎯</div>
-      <div class="kpi-value" id="kpi-goal">60</div>
-      <div class="kpi-label">Total Milestones</div>
-    </div>
-    <div class="kpi-card k2">
-      <div class="kpi-icon">✅</div>
-      <div class="kpi-value" id="kpi-done">0</div>
-      <div class="kpi-label">Completed</div>
-    </div>
-    <div class="kpi-card k3">
-      <div class="kpi-icon">⚡</div>
-      <div class="kpi-value" id="kpi-pct">0%</div>
-      <div class="kpi-label">Overall Progress</div>
-    </div>
-    <div class="kpi-card k4">
-      <div class="kpi-icon">🤖</div>
-      <div class="kpi-value" id="kpi-ai">0</div>
-      <div class="kpi-label">AI Tasks Done</div>
-    </div>
-  </div>
-
-  <!-- Tab Navigation -->
-  <div class="tab-nav">
-    <button class="tab-btn active-30" onclick="switchTab('30')">📅 Days 1–30 &nbsp; <small>Learn &amp; Foundation</small></button>
-    <button class="tab-btn" onclick="switchTab('60')">🔨 Days 31–60 &nbsp; <small>Build &amp; Execute</small></button>
-    <button class="tab-btn" onclick="switchTab('90')">🚀 Days 61–90 &nbsp; <small>Scale &amp; Optimize</small></button>
-  </div>
-
-  <!-- ═══════════════════════════════════ PHASE 30 ═══════════════════════════════════ -->
-  <div class="phase-panel active" data-phase="30" id="panel-30">
-    <div class="phase-header p30">
-      <div class="phase-number n30">30</div>
-      <div class="phase-meta">
-        <span class="phase-tag tag-30">Phase 1 · Days 1–30</span>
-        <h2>Learn &amp; Lay the Foundation</h2>
-        <p>Immerse in the company, team, and Gen AI tooling. Build relationships, map the existing sales process, and identify the highest-impact ToFu opportunities.</p>
-      </div>
-    </div>
-
-    <!-- Category: Orientation -->
-    <div class="category open">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">🏢</span>
-        <span class="category-title">Company &amp; Culture Orientation</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="30-1"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Complete all onboarding paperwork and system access setup</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="30-2"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">1:1 introductions with all immediate team members and key stakeholders</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="30-3"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Review company mission, vision, ICP (Ideal Customer Profile), and positioning docs</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="30-4"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Shadow 5+ discovery and demo calls; document insights and patterns</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="30-5"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Study top 10 closed-won and closed-lost deals for patterns</span><span class="item-tag tag-sell">Sales</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Category: AI Tooling -->
-    <div class="category open">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">🤖</span>
-        <span class="category-title">Gen AI Tooling &amp; Infrastructure Audit</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="30-6"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Audit all current AI and automation tools in the sales &amp; marketing stack</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="30-7"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Identify gaps where Gen AI can accelerate ToFu prospecting</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="30-8"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Evaluate 3 Gen AI content &amp; prospecting tools (e.g., Clay, Apollo AI, Outreach AI)</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="30-9"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Map the current CRM data quality and signal completeness</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="30-10"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Document AI prompt library strategy and governance framework</span><span class="item-tag tag-ai">AI</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Category: Pipeline -->
-    <div class="category open">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">📊</span>
-        <span class="category-title">ToFu Pipeline &amp; Lead Generation Baseline</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="30-11"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Establish current lead volume, conversion rates, and cycle time baselines</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="30-12"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Identify top 3 lead sources and their respective quality scores</span><span class="item-tag tag-lead">Leads</span></li>
-          <li onclick="toggleItem(this)" data-id="30-13"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Review and analyze existing email sequences and response rates</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="30-14"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Identify high-value segments for initial AI-powered outreach pilot</span><span class="item-tag tag-lead">Leads</span></li>
-          <li onclick="toggleItem(this)" data-id="30-15"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Build initial ICP account list using AI-enrichment tool of choice</span><span class="item-tag tag-ai">AI</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Category: Sales Enablement -->
-    <div class="category">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">📚</span>
-        <span class="category-title">Sales Enablement Content Audit</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="30-16"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Inventory existing sales collateral: decks, one-pagers, case studies</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="30-17"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Identify content gaps that block deals at each pipeline stage</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="30-18"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Define content quality standards and AI-assisted content creation guidelines</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="30-19"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Create a shared Gen AI prompt library for common sales content tasks</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="30-20"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Present 30-day findings and 60-day execution roadmap to leadership</span><span class="item-tag tag-ops">Ops</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <button class="reset-btn" onclick="resetPhase('30')">↺ Reset Phase 1 Progress</button>
-  </div>
-
-  <!-- ═══════════════════════════════════ PHASE 60 ═══════════════════════════════════ -->
-  <div class="phase-panel" data-phase="60" id="panel-60">
-    <div class="phase-header p60">
-      <div class="phase-number n60">60</div>
-      <div class="phase-meta">
-        <span class="phase-tag tag-60">Phase 2 · Days 31–60</span>
-        <h2>Build &amp; Execute</h2>
-        <p>Activate Gen AI workflows, launch initial ToFu campaigns, build expert-level sales enablement assets, and iterate rapidly based on early data signals.</p>
-      </div>
-    </div>
-
-    <!-- Category: AI Workflows -->
-    <div class="category open">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">⚙️</span>
-        <span class="category-title">Gen AI Workflow Activation</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="60-1"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Deploy AI-powered prospect research workflow for account enrichment</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="60-2"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Launch AI-personalized outbound email campaign for top ICP segment</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="60-3"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Integrate AI intent data (e.g., 6sense, Bombora) into CRM workflow</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="60-4"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Set up automated lead scoring model with AI-driven signals</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="60-5"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Build AI-assisted call prep brief template for AEs before discovery calls</span><span class="item-tag tag-ai">AI</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Category: ToFu Campaigns -->
-    <div class="category open">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">📣</span>
-        <span class="category-title">ToFu Pipeline Campaigns</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="60-6"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Launch 2 targeted LinkedIn outreach sequences with AI-generated personalization</span><span class="item-tag tag-lead">Leads</span></li>
-          <li onclick="toggleItem(this)" data-id="60-7"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Produce 3 AI-assisted thought-leadership posts targeting ICP personas</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="60-8"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Build and test AI-driven lead magnet (calculator, assessment, or guide)</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="60-9"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">A/B test 2 subject line variants generated by AI for cold outreach</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="60-10"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Track campaign metrics: open rate, reply rate, meeting booked rate</span><span class="item-tag tag-sell">Sales</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Category: Sales Enablement Build -->
-    <div class="category open">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">🛠️</span>
-        <span class="category-title">Expert-Level Sales Enablement Assets</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="60-11"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Build AI-generated competitive battle cards for top 5 competitors</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="60-12"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Develop persona-specific discovery question banks using LLM assistance</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="60-13"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Create AI-enhanced ROI calculator for the sales team to use in demos</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="60-14"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Launch AI coaching workflow for deal reviews and objection handling</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="60-15"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Build internal AI playbook: standard prompts, use cases, and best practices</span><span class="item-tag tag-ai">AI</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Category: Team Enablement -->
-    <div class="category">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">👥</span>
-        <span class="category-title">Team Enablement &amp; Adoption</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="60-16"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Run 2 Gen AI workshop sessions for the sales team (hands-on)</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="60-17"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Identify 2–3 AI power users to become internal champions</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="60-18"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Establish weekly AI wins &amp; learnings meeting cadence</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="60-19"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Document early wins and calculate time saved / pipeline influenced</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="60-20"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Present 60-day results and finalized 90-day scale plan to leadership</span><span class="item-tag tag-ops">Ops</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <button class="reset-btn" onclick="resetPhase('60')">↺ Reset Phase 2 Progress</button>
-  </div>
-
-  <!-- ═══════════════════════════════════ PHASE 90 ═══════════════════════════════════ -->
-  <div class="phase-panel" data-phase="90" id="panel-90">
-    <div class="phase-header p90">
-      <div class="phase-number n90">90</div>
-      <div class="phase-meta">
-        <span class="phase-tag tag-90">Phase 3 · Days 61–90</span>
-        <h2>Scale &amp; Optimize</h2>
-        <p>Fully operationalize Gen AI across the revenue engine. Scale proven ToFu workflows, optimize based on data, demonstrate measurable pipeline impact, and set the foundation for ongoing AI-led growth.</p>
-      </div>
-    </div>
-
-    <!-- Category: Scale -->
-    <div class="category open">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">📈</span>
-        <span class="category-title">Scale Gen AI Pipeline Engine</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="90-1"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Scale top-performing AI outreach sequence to 3 additional ICP segments</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="90-2"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Deploy fully-automated AI SDR workflow for initial qualification</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="90-3"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Integrate AI-generated multi-channel sequences (email + LinkedIn + phone)</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="90-4"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Implement AI-powered pipeline forecasting and deal risk scoring</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="90-5"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Achieve 2× lead volume target compared to pre-AI baseline</span><span class="item-tag tag-lead">Leads</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Category: Measurement -->
-    <div class="category open">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">📉</span>
-        <span class="category-title">Measurement &amp; Optimization</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="90-6"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Build real-time Gen AI impact dashboard (pipeline influenced, time saved)</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="90-7"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Analyze which AI-generated content formats drive highest reply rates</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="90-8"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Optimize AI lead scoring model with 60 days of real conversion data</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="90-9"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Run A/B test results review and document winning formula</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="90-10"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Quantify ROI: cost per meeting booked and pipeline generated per AI-dollar</span><span class="item-tag tag-sell">Sales</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Category: Operationalize -->
-    <div class="category open">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">🏗️</span>
-        <span class="category-title">Operationalize &amp; Systematize</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="90-11"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Document all AI workflows as SOPs; upload to team knowledge base</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="90-12"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Train full sales team on final AI-enhanced sales motion and playbook</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="90-13"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Establish recurring Gen AI tooling review cadence (quarterly)</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="90-14"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Expand AI enablement to Customer Success and Marketing teams</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="90-15"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Build the 12-month Gen AI revenue roadmap with executive sign-off</span><span class="item-tag tag-ops">Ops</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Category: Strategic -->
-    <div class="category">
-      <div class="category-header" onclick="toggleCategory(this)">
-        <span class="category-icon">🌟</span>
-        <span class="category-title">Strategic Impact &amp; Executive Alignment</span>
-        <span class="category-count" data-cat-count></span>
-        <span class="category-chevron">▼</span>
-      </div>
-      <div class="category-body">
-        <ul class="checklist">
-          <li onclick="toggleItem(this)" data-id="90-16"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Publish internal 90-day Gen AI impact report with data storytelling</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="90-17"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Identify 3 net-new AI use cases for the next quarter's roadmap</span><span class="item-tag tag-ai">AI</span></li>
-          <li onclick="toggleItem(this)" data-id="90-18"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Earn executive sponsorship for dedicated Gen AI budget line item</span><span class="item-tag tag-ops">Ops</span></li>
-          <li onclick="toggleItem(this)" data-id="90-19"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Position organization as AI-first in market and category narrative</span><span class="item-tag tag-sell">Sales</span></li>
-          <li onclick="toggleItem(this)" data-id="90-20"><div class="check-box"><svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="check-text">Celebrate team wins — launch a quarterly AI innovator recognition program</span><span class="item-tag tag-ops">Ops</span></li>
-        </ul>
-      </div>
-    </div>
-
-    <button class="reset-btn" onclick="resetPhase('90')">↺ Reset Phase 3 Progress</button>
-  </div>
-
-</main>
-
-<footer>
-  <p>Aaron Wolf · 30-60-90 Day Gen AI Sales Plan · <a href="https://github.com/RevIntellect/30_60_90" target="_blank" rel="noopener">GitHub</a></p>
-</footer>
-
-<!-- Notes Modal -->
-<div class="notes-overlay hidden" id="notesOverlay" onclick="if(event.target===this)closeNotesModal()">
-  <div class="notes-modal">
-    <h2>Progress Notes</h2>
-    <div class="notes-date" id="notesDate"></div>
-    <pre id="notesContent"></pre>
-    <div class="notes-modal-actions">
-      <button class="action-btn" onclick="closeNotesModal()">Close</button>
-      <button class="action-btn primary" onclick="exportDocx()">📄 Export DOCX</button>
-    </div>
-  </div>
 </div>
 
-<!-- CDN Libraries for DOCX export -->
-<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
-<script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<!-- ─── CURRENT FOCUS PANEL ──────────────────────────────────────── -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5" id="focusPanelWrap">
+    <div id="focusPanel" class="hidden">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-5 sm:p-6 text-white focus-glow">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">&#127919;</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-blue-200">Current Focus</span>
+                </div>
+                <button id="clearFocusBtn" class="text-xs px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 transition-colors font-semibold">Clear Focus</button>
+            </div>
+            <h3 class="text-lg sm:text-xl font-bold mb-1" id="focusTitle"></h3>
+            <p class="text-sm text-blue-100 leading-relaxed mb-3" id="focusDetail"></p>
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs px-2.5 py-1 rounded-full bg-white/20 font-semibold" id="focusMeta"></span>
+                <span id="focusPeople" class="text-xs text-blue-200"></span>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button class="focus-status-btn px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 text-sm font-semibold transition-all" data-s="in-progress">Mark Active</button>
+                <button class="focus-status-btn px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-sm font-semibold transition-all" data-s="done">Mark Complete</button>
+            </div>
+        </div>
+    </div>
+    <div id="focusEmpty" class="bg-white dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-2xl p-5 text-center">
+        <p class="text-slate-400 text-sm font-medium">&#127919; Click the pin icon on any task below to set your <strong>Current Focus</strong> &mdash; one task at a time, zero noise.</p>
+    </div>
+</div>
+
+<!-- ─── CONTROLS ─────────────────────────────────────────────────── -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
+    <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+        <div class="phase-tabs-scroll flex gap-1.5 bg-white dark:bg-slate-800 rounded-xl p-1 shadow-sm" id="phaseTabs">
+            <button class="phase-tab px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap bg-blue-600 text-white" data-phase="all">All</button>
+            <button class="phase-tab px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" data-phase="1">Phase 1</button>
+            <button class="phase-tab px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" data-phase="2">Phase 2</button>
+            <button class="phase-tab px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all whitespace-nowrap text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700" data-phase="3">Phase 3</button>
+        </div>
+        <div class="phase-tabs-scroll flex gap-1.5 sm:flex-wrap sm:ml-auto" id="wsFilters">
+            <button class="ws-filter active px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 border-amber-400 bg-amber-50 text-amber-700" data-ws="immersion">Immersion</button>
+            <button class="ws-filter active px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 border-blue-400 bg-blue-50 text-blue-700" data-ws="agent">AI Build</button>
+            <button class="ws-filter active px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 border-slate-400 bg-slate-100 text-slate-600" data-ws="infra">Infrastructure</button>
+            <button class="ws-filter active px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 border-emerald-400 bg-emerald-50 text-emerald-700" data-ws="pilot">Pilot</button>
+            <button class="ws-filter active px-3 py-1.5 rounded-full text-xs font-semibold transition-all border-2 border-red-300 bg-red-50 text-red-600" data-ws="content">Content</button>
+        </div>
+    </div>
+</div>
+
+<!-- ─── KEY OWNERS (collapsible) ─────────────────────────────────── -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+    <details class="bg-white dark:bg-slate-800 rounded-xl shadow-sm">
+        <summary class="px-5 py-3 cursor-pointer text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">Key Owners &amp; Partners</summary>
+        <div class="px-5 pb-3 flex flex-wrap gap-2">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-700 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Lilian Mitchell <span class="text-slate-400">(Enablement)</span></span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-700 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Vincent Lang'at <span class="text-slate-400">(Sales Insights)</span></span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-700 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-slate-500"></span>Mary Ring &amp; Max Coutu <span class="text-slate-400">(RevOps)</span></span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-700 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-slate-500"></span>Martha Conlon, Yan Cui, Patrick O'Donnell <span class="text-slate-400">(BizApps)</span></span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-700 text-xs font-medium"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Mike Trudell &amp; Garin Sweet <span class="text-slate-400">(BD)</span></span>
+        </div>
+    </details>
+</div>
+
+<!-- ─── TIMELINE ─────────────────────────────────────────────────── -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 pb-16" id="timeline"></main>
+
+<!-- ─── MODAL ────────────────────────────────────────────────────── -->
+<div class="fixed inset-0 bg-slate-900/50 dark:bg-black/60 z-[200] items-center justify-center p-4 hidden" id="modalOverlay">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl" id="modal">
+        <div class="p-6 sm:p-8">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-lg sm:text-xl font-bold pr-8" id="modalTitle"></h2>
+                <button class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center text-slate-500 dark:text-slate-300 text-lg flex-shrink-0 transition-colors" id="modalClose">&times;</button>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-5" id="modalMeta"></div>
+            <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed" id="modalBody"></div>
+            <div id="modalPeople" class="mt-5 pt-5 border-t border-slate-100 dark:border-slate-700"></div>
+            <div class="mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
+                <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Update Status</div>
+                <div class="flex gap-2 flex-wrap" id="modalStatus"></div>
+            </div>
+            <div class="mt-4">
+                <button id="modalFocusBtn" class="px-4 py-2 rounded-full border-2 border-indigo-300 bg-indigo-50 text-indigo-700 text-sm font-semibold hover:bg-indigo-100 transition-all">&#127919; Set as Current Focus</button>
+            </div>
+            <!-- Notes section -->
+            <div class="mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
+                <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Personal Notes</div>
+                <textarea id="modalNotes" class="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 rounded-xl p-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-y min-h-[60px]" placeholder="Jot down quick thoughts, blockers, or next steps..."></textarea>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
-  // ── State Management (localStorage) ──────────────────────────────────────────
-  const KEY = '3060_90_state';
+// ─── DATA ──────────────────────────────────────────────────────────
+const TASKS = [
+    // Phase 1
+    { id:1, phase:1, week:"Mar 11-14", ws:"immersion", title:"Immersion",
+      short:"Applause solution set & Value Selling/MEDDPICC (Mitchell, Scribi)",
+      detail:"Deep dive into the Applause solution set, 'Value Selling' methodology, and MEDDPICC. Partner with Lilian Mitchell and Erin Scribi on the general Applause training plan and resource library in Highspot and LinkedIn Learning.",
+      people:["Lilian Mitchell","Erin Scribi"], status:"in-progress" },
+    { id:2, phase:1, week:"Mar 11-14", ws:"infra", title:"Infra Check",
+      short:"Audit AI/Sales tech stack & API connections (RevOps, BizApps)",
+      detail:"Audit the current AI/Sales tech stack (Salesloft, Salesforce, Luster, Highspot and potential new vendors like Clay, Common Room, etc.). Partner with RevOps and BizApps to ensure API connections are stable and data is flowing correctly.",
+      people:["Mary Ring","Max Coutu","Martha Conlon","Yan Cui","Patrick O'Donnell"], status:"in-progress" },
+    { id:3, phase:1, week:"Mar 17-21", ws:"agent", title:"Agent Audit",
+      short:'Review "prospecting agent" drafts; Map logic flow (Claude Code/Co-work)',
+      detail:"Review the existing 'prospecting agent' drafts. Map out the logic flow and identify where Claude Code or Claude Co-work can refine the output. Evaluate and recommend whether we should begin leveraging this audit for a quick start in Q1 with defined parameters.",
+      people:[], status:"pending" },
+    { id:4, phase:1, week:"Mar 17-21", ws:"infra", title:"Sales Insights Review",
+      short:"Understand new UI (Lang'at); Review Perplexity scripts (Gen Digital Quality, AI Initiative)",
+      detail:"Partner with Vincent Lang'at to understand the new Sales Insights & Planning Platform UI. Review the scripts and processes for mass scale research around 'General Digital Quality' and 'AI Initiatives' built using Perplexity. Provide a point of view on the current state and recommendations for improvements.",
+      people:["Vincent Lang'at"], status:"pending" },
+    { id:5, phase:1, week:"Mar 24-28", ws:"agent", title:"Agent Audit",
+      short:"Refine output, recommend quick start leverage & trial adjustments",
+      detail:"Identify what adjustments need to be made prior to extending the trial. Refine agent output and recommend whether to begin leveraging for a quick start with defined parameters.",
+      people:[], status:"pending" },
+    { id:6, phase:1, week:"Mar 24-28", ws:"infra", title:"Infra Check",
+      short:"Align on Apollo/Nooks pilots; Prioritize new tools (Dave, InfoSec/Legal)",
+      detail:"Align with Max Coutu and BD leadership (Mike Trudell and Garin Sweet) on the Apollo and Nooks pilots underway. Work with Dave to prioritize new tools for budget and Infosec/Legal review and approval.",
+      people:["Max Coutu","Mike Trudell","Garin Sweet","Dave"], status:"pending" },
+    { id:7, phase:1, week:"Mar 31-Apr 4", ws:"immersion", title:"Training",
+      short:"Partner on general training plan & resource library in Highspot/LinkedIn",
+      detail:"Partner with Lilian Mitchell and Erin Scribi on the general Applause training plan and resource library in Highspot and LinkedIn Learning.",
+      people:["Lilian Mitchell","Erin Scribi"], status:"pending" },
+    { id:8, phase:1, week:"Mar 31-Apr 4", ws:"infra", title:"Infra Check",
+      short:"Review AI Tool Vendor Matrix/Use Case Library; Build homegrown tools tracker",
+      detail:"Review the AI Tool Vendor Matrix and Sales Gen AI Use Case Library. Build a tracker for known homegrown tools, identifying how to take advantage of their benefits while streamlining best practices into a cohesive workflow.",
+      people:[], status:"pending" },
+    { id:9, phase:1, week:"Apr 7-9", ws:"pilot", title:"Process Def",
+      short:'Formalize "Contact Feed" workflow; Centralized hub for outbound',
+      detail:"Formalize the 'Contact Feed' workflow. Define exactly how Reps will provide LinkedIn contact lists to Aaron's team for agent processing, assuming a centralized hub for outbound content creation.",
+      people:[], status:"pending" },
+    { id:10, phase:1, week:"Apr 7-9", ws:"infra", title:"Deliverability",
+      short:"Verify DMARC/SPF/DKIM; Establish AI safety rails",
+      detail:"Work with IT/BD/Marketing Ops/RevOps to verify DMARC/SPF/DKIM settings and establish 'safety rails' to ensure AI-generated volume doesn't trigger SPAM filters. Understand current/baseline infrastructure to identify potential issues.",
+      people:[], status:"pending" },
+    { id:11, phase:1, week:"Apr 7-9", ws:"content", title:"Document Plan",
+      short:"As-Is and Program Plan/Project Plan for coming weeks",
+      detail:"Document As-Is state and establish a Program Plan/Project Plan for the recommended approach over the coming weeks and months. Include additional tools and resources needed to optimize the tech stack and accelerate impact on sales pipeline and team effectiveness.",
+      people:[], status:"pending" },
 
-  function loadState() {
+    // Phase 2
+    { id:12, phase:2, week:"Apr 14-18", ws:"pilot", title:"Pilot Launch",
+      short:'Roll out "Agent-Assisted Outbound" for select AEs/BDRs',
+      detail:"Roll out the 'Agent-Assisted Outbound' for a select group of high-velocity AEs/BDRs. Aaron prepares personalized cadences (e.g., using Claude and/or Perplexity research) and pushes them to Salesloft as drafts for rep approval.",
+      people:[], status:"pending" },
+    { id:13, phase:2, week:"Apr 14-18", ws:"content", title:"Content Factory",
+      short:"Partner with Lilian Mitchell to use HeyGen/Firefly for training modules",
+      detail:"Partner with Lilian Mitchell to use HeyGen and Adobe Firefly (TBD) to create training module frameworks and initial on-demand content.",
+      people:["Lilian Mitchell"], status:"pending" },
+    { id:14, phase:2, week:"Apr 21-25", ws:"agent", title:"Deep Research",
+      short:'Implement Gemini Deep Research workflows for "Value Selling Prep" (Tier-1)',
+      detail:"Implement Gemini Deep Research workflows to generate 'Value Selling Prep' packages for Tier-1 accounts, automating 80% of the manual research reps currently do.",
+      people:[], status:"pending" },
+    { id:15, phase:2, week:"Apr 21-25", ws:"pilot", title:"Feedback Loop",
+      short:"Weekly sync with Leadership/Enablement to grade AI output",
+      detail:"Weekly sync with Sales Leadership and Enablement to 'grade' the AI output and adjust the agent's 'Applause Voice' based on reply rates.",
+      people:[], status:"pending" },
+    { id:16, phase:2, week:"Apr 28-May 2", ws:"pilot", title:"Pilot Launch",
+      short:"Continue Agent-Assisted Outbound; Aaron prepares personalized cadences",
+      detail:"Continue the Agent-Assisted Outbound pilot. Aaron prepares personalized cadences and pushes them to Salesloft as drafts for rep approval.",
+      people:[], status:"pending" },
+    { id:17, phase:2, week:"Apr 28-May 2", ws:"content", title:"Content Factory",
+      short:'Create first 3 "On-Demand" training modules (e.g., Applause for Retail)',
+      detail:"Create the first 3 'On-Demand' training modules (e.g., Applause for Retail or Value Selling 101) using HeyGen and Adobe Firefly.",
+      people:["Lilian Mitchell"], status:"pending" },
+    { id:18, phase:2, week:"May 5-9", ws:"pilot", title:"Feedback Loop",
+      short:'Adjust agent\'s "Applause Voice" based on reply rates; Grade output',
+      detail:"Adjust the agent's 'Applause Voice' based on reply rates. Grade output quality and iterate on cadence performance.",
+      people:[], status:"pending" },
+    { id:19, phase:2, week:"May 5-9", ws:"content", title:"Content Factory",
+      short:"Finalize and deploy first training modules",
+      detail:"Finalize and deploy the first batch of on-demand training modules to the sales team.",
+      people:["Lilian Mitchell"], status:"pending" },
+
+    // Phase 3
+    { id:20, phase:3, week:"May 12-16", ws:"pilot", title:"Global Expansion",
+      short:"Scale automated cadence preparation to global sales team",
+      detail:"Scale the automated cadence preparation to the wider global sales team.",
+      people:[], status:"pending" },
+    { id:21, phase:3, week:"May 12-16", ws:"agent", title:"First Call Agent",
+      short:'Launch agent for "Early Stage Call Guides" (Insights, Questions, Stories)',
+      detail:"Launch an agent that takes research and 'Sneak Peek' insights and automatically generates Early Stage Call Guides — providing reps with 5-10 specific and personalized discovery questions, a hypothesis and suggested customer stories for every new meeting booked.",
+      people:[], status:"pending" },
+    { id:22, phase:3, week:"May 19-23", ws:"pilot", title:"Performance Dashboard",
+      short:'Build "Sales Effectiveness Dashboard" with RevOps to track metrics',
+      detail:"In partnership with RevOps, build a 'Sales Effectiveness Dashboard' to track: AI-assisted vs. Manual pipeline generation, Meeting-set rates from AI-informed cadences, and Time saved per rep on account research.",
+      people:["Mary Ring","Max Coutu"], status:"pending" },
+    { id:23, phase:3, week:"May 19-23", ws:"content", title:"Enablement Library",
+      short:"Complete next phase of AI-driven training library (MEDDPICC/Renewal)",
+      detail:"Complete the next phase of the library of AI-driven, on-demand training for all Applause solutions and core methodologies (MEDDPICC/Renewal Milestones).",
+      people:["Lilian Mitchell"], status:"pending" },
+    { id:24, phase:3, week:"May 26-30", ws:"pilot", title:"Global Expansion",
+      short:"Continue scaling and optimizing automated cadences",
+      detail:"Continue scaling and optimizing automated cadences across the global sales organization. Refine workflows based on feedback and performance data.",
+      people:[], status:"pending" },
+    { id:25, phase:3, week:"May 26-30", ws:"infra", title:"Performance Dashboard",
+      short:"Track AI vs. Manual pipeline, Meeting-set rates, Time saved",
+      detail:"Track AI-assisted vs. Manual pipeline generation, Meeting-set rates from AI-informed cadences, and Time saved per rep on account research.",
+      people:["Mary Ring","Max Coutu"], status:"pending" },
+    { id:26, phase:3, week:"Jun 2-9", ws:"agent", title:"First Call Agent",
+      short:"Refine agent output based on initial feedback",
+      detail:"Refine the First Call Agent output based on initial feedback from reps. Iterate on discovery question quality, hypothesis accuracy and customer story relevance.",
+      people:[], status:"pending" },
+    { id:27, phase:3, week:"Jun 2-9", ws:"content", title:"Enablement Library",
+      short:"Finalize and deploy remaining AI-driven training assets",
+      detail:"Finalize and deploy remaining AI-driven training assets across the full sales organization.",
+      people:["Lilian Mitchell"], status:"pending" }
+];
+
+const PHASE_INFO = {
+    1: { label:"Phase 1", name:"The Foundation & Audit", days:"Days 1-30", badgeCls:"bg-amber-500",
+         focus:"Ecosystem immersion, technical rationalization, and infrastructure health." },
+    2: { label:"Phase 2", name:"Build, Pilot & Feed", days:"Days 31-60", badgeCls:"bg-blue-600",
+         focus:"Launching the first Mass Preparation pilot and building training assets." },
+    3: { label:"Phase 3", name:"Scale & Optimize", days:"Days 61-90", badgeCls:"bg-emerald-600",
+         focus:"Global rollout, automated First Call Plans, and performance measurement." }
+};
+
+const WS_LABELS = { immersion:"Immersion & Training", agent:"Agent/AI Build", infra:"Infrastructure & Ops", pilot:"Pilot & Feedback", content:"Content & Enablement" };
+
+const WS_STYLES = {
+    immersion: { border:"border-l-amber-500", tagBg:"bg-amber-50", tagText:"text-amber-700", dotBg:"bg-amber-500" },
+    agent:     { border:"border-l-blue-500",  tagBg:"bg-blue-50",  tagText:"text-blue-700",  dotBg:"bg-blue-500"  },
+    infra:     { border:"border-l-slate-400", tagBg:"bg-slate-100", tagText:"text-slate-600", dotBg:"bg-slate-500" },
+    pilot:     { border:"border-l-emerald-500", tagBg:"bg-emerald-50", tagText:"text-emerald-700", dotBg:"bg-emerald-500" },
+    content:   { border:"border-l-red-400",   tagBg:"bg-red-50",   tagText:"text-red-600",   dotBg:"bg-red-400"   }
+};
+
+// ─── STATE ─────────────────────────────────────────────────────────
+let activePhase = "all";
+let activeWorkstreams = new Set(["immersion","agent","infra","pilot","content"]);
+let focusedTaskId = null;
+let currentModalTask = null;
+
+// ─── PERSISTENCE ───────────────────────────────────────────────────
+const STORAGE_KEY = "aw-onboarding-v2";
+
+function loadState() {
     try {
-      const raw = JSON.parse(localStorage.getItem(KEY)) || {};
-      return migrateState(raw);
-    } catch (e) { console.warn('30-60-90: failed to load state from localStorage', e); return {}; }
-  }
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (!saved) return;
+        if (saved.statuses) TASKS.forEach(t => { if(saved.statuses[t.id]) t.status = saved.statuses[t.id]; });
+        if (saved.focusId) focusedTaskId = saved.focusId;
+        if (saved.notes) TASKS.forEach(t => { if(saved.notes[t.id]) t.notes = saved.notes[t.id]; });
+    } catch(e) {}
+}
 
-  // Migrate old format { "30-1": true } → { "30-1": { completed: true, pinned: false } }
-  function migrateState(raw) {
-    const migrated = {};
-    for (const [key, val] of Object.entries(raw)) {
-      if (typeof val === 'boolean') {
-        migrated[key] = { completed: val, pinned: false };
-      } else if (typeof val === 'object' && val !== null) {
-        migrated[key] = val;
-      }
+function saveState() {
+    const statuses = {}; const notes = {};
+    TASKS.forEach(t => { statuses[t.id] = t.status; if(t.notes) notes[t.id] = t.notes; });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ statuses, focusId: focusedTaskId, notes, lastSaved: new Date().toISOString() }));
+}
+
+loadState();
+
+// ─── FOCUS PANEL ───────────────────────────────────────────────────
+function renderFocusPanel() {
+    const panel = document.getElementById("focusPanel");
+    const empty = document.getElementById("focusEmpty");
+
+    if (!focusedTaskId) {
+        panel.classList.add("hidden");
+        empty.classList.remove("hidden");
+        return;
     }
-    return migrated;
-  }
 
-  function saveState(s) {
-    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { console.warn('30-60-90: failed to save state to localStorage', e); }
-  }
+    const task = TASKS.find(t => t.id === focusedTaskId);
+    if (!task) { focusedTaskId = null; saveState(); renderFocusPanel(); return; }
 
-  function isCompleted(id) {
-    return state[id] && state[id].completed;
-  }
+    empty.classList.add("hidden");
+    panel.classList.remove("hidden");
 
-  function isPinned(id) {
-    return state[id] && state[id].pinned;
-  }
+    const info = PHASE_INFO[task.phase];
+    document.getElementById("focusTitle").textContent = task.title + ": " + task.short;
+    document.getElementById("focusDetail").textContent = task.detail;
+    document.getElementById("focusMeta").textContent = info.label + " \u00B7 " + task.week + " \u00B7 " + WS_LABELS[task.ws];
+    document.getElementById("focusPeople").textContent = task.people.length ? "With: " + task.people.join(", ") : "";
 
-  // ── Init ──────────────────────────────────────────────────────────────────────
-  let state = loadState();
-
-  // Inject pin buttons into every checklist item
-  document.querySelectorAll('.checklist li').forEach(li => {
-    const pinBtn = document.createElement('span');
-    pinBtn.className = 'pin-btn';
-    pinBtn.textContent = '📌';
-    pinBtn.onclick = function(e) { e.stopPropagation(); togglePin(li); };
-    li.insertBefore(pinBtn, li.firstChild);
-
-    const id = li.dataset.id;
-    if (isCompleted(id)) li.classList.add('done');
-    if (isPinned(id)) li.classList.add('pinned');
-  });
-
-  reorderAllPinned();
-  updateCategoryCounts();
-  updateProgress();
-
-  // ── Tab Switching ─────────────────────────────────────────────────────────────
-  let activePhase = '30';
-
-  function switchTab(phase) {
-    document.querySelectorAll('.phase-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + phase).classList.add('active');
-
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.className = 'tab-btn';
+    // Focus status buttons
+    document.querySelectorAll(".focus-status-btn").forEach(btn => {
+        btn.onclick = () => {
+            task.status = btn.dataset.s;
+            if (btn.dataset.s === "done") {
+                // Auto-advance focus to next pending task
+                const nextTask = TASKS.find(t => t.id > task.id && t.status === "pending");
+                focusedTaskId = nextTask ? nextTask.id : null;
+            }
+            saveState();
+            render();
+        };
     });
-    const tabs = document.querySelectorAll('.tab-btn');
-    const idx = ['30','60','90'].indexOf(phase);
-    if (idx >= 0) tabs[idx].classList.add('active-' + phase);
+}
 
-    activePhase = phase;
-  }
+document.getElementById("clearFocusBtn").addEventListener("click", () => {
+    focusedTaskId = null;
+    saveState();
+    render();
+});
 
-  // ── Toggle Item ───────────────────────────────────────────────────────────────
-  function toggleItem(li) {
-    li.classList.toggle('done');
-    const id = li.dataset.id;
-    if (!state[id]) state[id] = { completed: false, pinned: false };
-    state[id].completed = li.classList.contains('done');
-    if (!state[id].completed && !state[id].pinned) delete state[id];
-    saveState(state);
-    updateCategoryCounts();
-    updateProgress();
-  }
+// ─── RENDER ────────────────────────────────────────────────────────
+function render() {
+    updateStats();
+    renderFocusPanel();
+    const tl = document.getElementById("timeline");
+    tl.innerHTML = "";
 
-  // ── Pin / Unpin ───────────────────────────────────────────────────────────────
-  function togglePin(li) {
-    li.classList.toggle('pinned');
-    const id = li.dataset.id;
-    if (!state[id]) state[id] = { completed: false, pinned: false };
-    state[id].pinned = li.classList.contains('pinned');
-    if (!state[id].completed && !state[id].pinned) delete state[id];
-    saveState(state);
-    reorderAllPinned();
-  }
+    [1,2,3].forEach(phase => {
+        if (activePhase !== "all" && parseInt(activePhase) !== phase) return;
+        const info = PHASE_INFO[phase];
+        const phaseTasks = TASKS.filter(t => t.phase === phase && activeWorkstreams.has(t.ws));
+        if (!phaseTasks.length) return;
 
-  function reorderAllPinned() {
-    document.querySelectorAll('.checklist').forEach(ul => {
-      const items = Array.from(ul.children);
-      const pinned = items.filter(li => li.classList.contains('pinned'));
-      const unpinned = items.filter(li => !li.classList.contains('pinned'));
-      pinned.forEach(li => ul.appendChild(li));
-      unpinned.forEach(li => ul.appendChild(li));
-      // Move pinned to top
-      pinned.forEach(li => ul.insertBefore(li, ul.firstChild));
-    });
-  }
+        const section = document.createElement("div");
+        section.className = "mb-8 fade-in";
 
-  // ── Toggle Category ───────────────────────────────────────────────────────────
-  function toggleCategory(header) {
-    header.closest('.category').classList.toggle('open');
-  }
+        // Phase progress
+        const phaseDone = phaseTasks.filter(t => t.status === "done").length;
+        const phaseTotal = phaseTasks.length;
+        const phasePct = phaseTotal ? Math.round((phaseDone / phaseTotal) * 100) : 0;
 
-  // ── Reset Phase ───────────────────────────────────────────────────────────────
-  function resetPhase(phase) {
-    if (!confirm('Reset all progress for Phase ' + phase + '?')) return;
-    document.querySelectorAll('#panel-' + phase + ' .checklist li').forEach(li => {
-      li.classList.remove('done');
-      li.classList.remove('pinned');
-      const id = li.dataset.id;
-      delete state[id];
-    });
-    saveState(state);
-    reorderAllPinned();
-    updateCategoryCounts();
-    updateProgress();
-  }
+        section.innerHTML = `
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-4 pb-3 border-b-2 border-slate-200 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider text-white ${info.badgeCls}">${info.label}</span>
+                    <span class="text-base sm:text-lg font-bold">${info.name}</span>
+                </div>
+                <div class="flex items-center gap-2 sm:ml-auto">
+                    <div class="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 progress-bar-animated" style="width:${phasePct}%"></div></div>
+                    <span class="text-xs font-semibold text-slate-500">${phaseDone}/${phaseTotal}</span>
+                    <span class="text-xs text-slate-400 hidden sm:inline">${info.days}</span>
+                </div>
+            </div>`;
 
-  // ── Update Category Counts ────────────────────────────────────────────────────
-  function updateCategoryCounts() {
-    document.querySelectorAll('.category').forEach(cat => {
-      const items  = cat.querySelectorAll('.checklist li');
-      const done   = cat.querySelectorAll('.checklist li.done');
-      const badge  = cat.querySelector('[data-cat-count]');
-      if (badge) badge.textContent = done.length + ' / ' + items.length;
-    });
-  }
+        // Group by week
+        const weeks = []; const weekMap = {};
+        phaseTasks.forEach(t => { if(!weekMap[t.week]){weekMap[t.week]=[];weeks.push(t.week);} weekMap[t.week].push(t); });
 
-  // ── Update Progress Bars & KPIs ───────────────────────────────────────────────
-  function updateProgress() {
-    let totalAll = 0, doneAll = 0, doneAI = 0;
+        weeks.forEach(w => {
+            const isCurrent = w === "Mar 11-14";
+            const row = document.createElement("div");
+            row.className = "grid grid-cols-1 sm:grid-cols-[110px_1fr] gap-2 sm:gap-4 mb-3";
 
-    ['30','60','90'].forEach(phase => {
-      const panel = document.getElementById('panel-' + phase);
-      const items = panel.querySelectorAll('.checklist li');
-      const done  = panel.querySelectorAll('.checklist li.done');
-      const pct   = items.length ? Math.round(done.length / items.length * 100) : 0;
+            const labelDiv = document.createElement("div");
+            labelDiv.className = `text-xs sm:text-sm font-semibold pt-3 sm:text-right whitespace-nowrap ${isCurrent ? 'text-blue-600' : 'text-slate-400'}`;
+            if (isCurrent) {
+                labelDiv.innerHTML = `<span class="inline-block w-2 h-2 rounded-full bg-blue-500 pulse-dot mr-1 align-middle"></span>${w}`;
+            } else {
+                labelDiv.textContent = w;
+            }
+            row.appendChild(labelDiv);
 
-      document.getElementById('pct'  + phase).textContent = pct + '%';
-      document.getElementById('bar'  + phase).style.width = pct + '%';
+            const cardsDiv = document.createElement("div");
+            cardsDiv.className = "flex flex-col sm:flex-row gap-2.5 flex-wrap min-w-0";
 
-      totalAll += items.length;
-      doneAll  += done.length;
-    });
+            weekMap[w].forEach(t => {
+                const s = WS_STYLES[t.ws];
+                const isDone = t.status === "done";
+                const isFocused = t.id === focusedTaskId;
+                const card = document.createElement("div");
+                card.className = `task-card-hover flex-1 min-w-0 sm:min-w-[240px] max-w-md bg-white dark:bg-slate-800 rounded-xl shadow-sm border-l-4 ${s.border} p-4 cursor-pointer relative group ${isDone ? 'done-card' : ''} ${isFocused ? 'ring-2 ring-blue-400 ring-offset-2 dark:ring-offset-slate-900' : ''}`;
+                card.dataset.id = t.id;
 
-    document.querySelectorAll('.checklist li.done .tag-ai').forEach(() => doneAI++);
+                const statusHTML = isDone
+                    ? `<span class="absolute top-3 right-3 w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs font-bold">&#10003;</span>`
+                    : t.status === "in-progress"
+                    ? `<span class="absolute top-3 right-3 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 flex items-center justify-center"><span class="w-2 h-2 rounded-full bg-blue-500 pulse-dot"></span></span>`
+                    : `<span class="absolute top-3 right-3 w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 flex items-center justify-center text-xs">&#9675;</span>`;
 
-    const overallPct = totalAll ? Math.round(doneAll / totalAll * 100) : 0;
+                // Pin button (visible on hover)
+                const pinHTML = `<button class="pin-btn absolute top-3 right-12 w-6 h-6 rounded-full ${isFocused ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 opacity-0 group-hover:opacity-100'} flex items-center justify-center text-xs transition-all" title="Set as focus">&#128204;</button>`;
 
-    document.getElementById('kpi-goal').textContent = totalAll;
-    document.getElementById('kpi-done').textContent = doneAll;
-    document.getElementById('kpi-pct').textContent  = overallPct + '%';
-    document.getElementById('kpi-ai').textContent   = doneAI;
-  }
+                const checkId = `check-${t.id}`;
+                card.innerHTML = `
+                    ${statusHTML}
+                    ${pinHTML}
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <input type="checkbox" id="${checkId}" class="w-4 h-4 rounded cursor-pointer flex-shrink-0" ${isDone ? 'checked' : ''}>
+                        <span class="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded ${s.tagBg} ${s.tagText}">${t.title}</span>
+                    </div>
+                    <div class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed pr-8 card-text">${t.short}</div>
+                    ${t.people.length ? `<div class="flex flex-wrap gap-1 mt-2">${t.people.map(p=>`<span class="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full ${s.dotBg}"></span>${p}</span>`).join('')}</div>` : ''}
+                    ${t.notes ? `<div class="mt-2 text-[10px] text-indigo-500 truncate max-w-[200px]">&#128221; ${t.notes}</div>` : ''}`;
 
-  // ── Generate Notes ────────────────────────────────────────────────────────────
-  function generateNotes() {
-    const phaseNames = { '30': 'Phase 1: Learn & Lay the Foundation (Days 1-30)', '60': 'Phase 2: Build & Execute (Days 31-60)', '90': 'Phase 3: Scale & Optimize (Days 61-90)' };
-    let notes = '30-60-90 DAY PLAN — PROGRESS REPORT\nAaron Wolf · Operationalize Gen AI → ToFu Pipeline & Sales Enablement\n';
-    notes += 'Generated: ' + new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + '\n';
-    notes += '═'.repeat(60) + '\n\n';
+                // Checkbox toggle
+                const checkbox = card.querySelector(`#${checkId}`);
+                checkbox.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    t.status = checkbox.checked ? "done" : "pending";
+                    saveState();
+                    render();
+                });
 
-    let totalAll = 0, doneAll = 0, pinnedAll = 0;
+                // Pin button
+                card.querySelector(".pin-btn").addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    focusedTaskId = (focusedTaskId === t.id) ? null : t.id;
+                    saveState();
+                    render();
+                    if (focusedTaskId) window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
 
-    ['30','60','90'].forEach(phase => {
-      const panel = document.getElementById('panel-' + phase);
-      const items = panel.querySelectorAll('.checklist li');
-      const done  = panel.querySelectorAll('.checklist li.done');
-      const pinned = panel.querySelectorAll('.checklist li.pinned');
-      const pct = items.length ? Math.round(done.length / items.length * 100) : 0;
+                // Card click opens modal
+                card.addEventListener("click", (e) => {
+                    if (e.target.tagName === "INPUT" || e.target.classList.contains("pin-btn")) return;
+                    openModal(t);
+                });
 
-      totalAll += items.length;
-      doneAll  += done.length;
-      pinnedAll += pinned.length;
+                cardsDiv.appendChild(card);
+            });
 
-      notes += phaseNames[phase] + '\n';
-      notes += 'Progress: ' + done.length + '/' + items.length + ' (' + pct + '%)\n';
-      if (pinned.length > 0) notes += 'Pinned: ' + pinned.length + ' task(s)\n';
-      notes += '─'.repeat(50) + '\n';
-
-      // Group by category
-      panel.querySelectorAll('.category').forEach(cat => {
-        const catTitle = cat.querySelector('.category-title').textContent;
-        notes += '\n  ' + catTitle + '\n';
-        cat.querySelectorAll('.checklist li').forEach(li => {
-          const text = li.querySelector('.check-text').textContent;
-          const isDone = li.classList.contains('done');
-          const isPin = li.classList.contains('pinned');
-          const prefix = isDone ? '  ✅' : '  ⬜';
-          const pinMark = isPin ? ' 📌' : '';
-          notes += prefix + ' ' + text + pinMark + '\n';
+            row.appendChild(cardsDiv);
+            section.appendChild(row);
         });
-      });
-      notes += '\n';
+
+        tl.appendChild(section);
     });
+}
 
-    notes += '═'.repeat(60) + '\n';
-    notes += 'SUMMARY\n';
-    notes += 'Total tasks: ' + totalAll + ' | Completed: ' + doneAll + ' | Remaining: ' + (totalAll - doneAll) + '\n';
-    notes += 'Overall progress: ' + (totalAll ? Math.round(doneAll / totalAll * 100) : 0) + '%\n';
-    if (pinnedAll > 0) notes += 'Pinned tasks: ' + pinnedAll + '\n';
+function updateStats() {
+    const total = TASKS.length;
+    const done = TASKS.filter(t => t.status === "done").length;
+    const inProg = TASKS.filter(t => t.status === "in-progress").length;
+    const pend = TASKS.filter(t => t.status === "pending").length;
+    document.getElementById("completedCount").textContent = done;
+    document.getElementById("inProgressCount").textContent = inProg;
+    document.getElementById("pendingCount").textContent = pend;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    document.getElementById("progressFill").style.width = pct + "%";
+    document.getElementById("progressPct").textContent = pct + "%";
+}
 
-    return notes;
-  }
+// ─── MODAL ─────────────────────────────────────────────────────────
+function openModal(task) {
+    currentModalTask = task;
+    const info = PHASE_INFO[task.phase];
+    const s = WS_STYLES[task.ws];
+    document.getElementById("modalTitle").textContent = task.title;
+    document.getElementById("modalMeta").innerHTML = `
+        <span class="px-3 py-1 rounded-full text-xs font-semibold ${s.tagBg} ${s.tagText}">${WS_LABELS[task.ws]}</span>
+        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">${info.label} &middot; ${task.week}</span>`;
+    document.getElementById("modalBody").innerHTML = `<p>${task.detail}</p>`;
 
-  function openNotesModal() {
-    const notes = generateNotes();
-    document.getElementById('notesDate').textContent = new Date().toLocaleString();
-    document.getElementById('notesContent').textContent = notes;
-    document.getElementById('notesOverlay').classList.remove('hidden');
-  }
+    const peopleEl = document.getElementById("modalPeople");
+    if (task.people.length) {
+        peopleEl.innerHTML = `<div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Key People</div>
+            <div class="flex flex-wrap gap-1.5">${task.people.map(p => `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-700 text-xs font-medium"><span class="w-2 h-2 rounded-full ${s.dotBg}"></span>${p}</span>`).join('')}</div>`;
+    } else {
+        peopleEl.innerHTML = "";
+    }
 
-  function closeNotesModal() {
-    document.getElementById('notesOverlay').classList.add('hidden');
-  }
-
-  // ── Export DOCX ───────────────────────────────────────────────────────────────
-  function exportDocx() {
-    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
-
-    const phaseNames = { '30': 'Phase 1: Learn & Lay the Foundation (Days 1-30)', '60': 'Phase 2: Build & Execute (Days 31-60)', '90': 'Phase 3: Scale & Optimize (Days 61-90)' };
-    const children = [];
-
-    // Title
-    children.push(new Paragraph({ children: [new TextRun({ text: '30-60-90 Day Plan — Progress Report', bold: true, size: 36 })], heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER }));
-    children.push(new Paragraph({ children: [new TextRun({ text: 'Aaron Wolf · Operationalize Gen AI → ToFu Pipeline & Sales Enablement', italics: true, size: 22, color: '666666' })], alignment: AlignmentType.CENTER }));
-    children.push(new Paragraph({ children: [new TextRun({ text: 'Generated: ' + new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), size: 20, color: '999999' })], alignment: AlignmentType.CENTER, spacing: { after: 400 } }));
-
-    let totalAll = 0, doneAll = 0;
-
-    ['30','60','90'].forEach(phase => {
-      const panel = document.getElementById('panel-' + phase);
-      const items = panel.querySelectorAll('.checklist li');
-      const done  = panel.querySelectorAll('.checklist li.done');
-      const pct = items.length ? Math.round(done.length / items.length * 100) : 0;
-      totalAll += items.length;
-      doneAll  += done.length;
-
-      // Phase heading
-      children.push(new Paragraph({ children: [new TextRun({ text: phaseNames[phase], bold: true, size: 28 })], heading: HeadingLevel.HEADING_1, spacing: { before: 300, after: 100 } }));
-      children.push(new Paragraph({ children: [new TextRun({ text: 'Progress: ' + done.length + '/' + items.length + ' (' + pct + '%)', size: 22, color: '4f8ef7' })], spacing: { after: 200 } }));
-
-      panel.querySelectorAll('.category').forEach(cat => {
-        const catTitle = cat.querySelector('.category-title').textContent;
-        children.push(new Paragraph({ children: [new TextRun({ text: catTitle, bold: true, size: 24 })], heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 100 } }));
-
-        cat.querySelectorAll('.checklist li').forEach(li => {
-          const text = li.querySelector('.check-text').textContent;
-          const isDone = li.classList.contains('done');
-          const isPin = li.classList.contains('pinned');
-          const marker = isDone ? '✅ ' : '⬜ ';
-          const pinText = isPin ? ' [PINNED]' : '';
-
-          children.push(new Paragraph({
-            children: [
-              new TextRun({ text: marker + text, size: 20, strike: isDone, color: isDone ? '999999' : '333333' }),
-              ...(isPin ? [new TextRun({ text: pinText, size: 20, bold: true, color: 'D4A017' })] : [])
-            ],
-            spacing: { after: 60 },
-            indent: { left: 360 }
-          }));
+    // Status buttons
+    const statusEl = document.getElementById("modalStatus");
+    const labels = { pending:"Pending", "in-progress":"In Progress", done:"Completed" };
+    statusEl.innerHTML = ["pending","in-progress","done"].map(st =>
+        `<button class="px-4 py-2 rounded-full border-2 text-sm font-semibold transition-all ${task.status === st ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-300 hover:border-blue-300'}" data-s="${st}">${labels[st]}</button>`
+    ).join('');
+    statusEl.querySelectorAll("button").forEach(btn => {
+        btn.addEventListener("click", () => {
+            task.status = btn.dataset.s;
+            saveState();
+            render();
+            openModal(task);
         });
-      });
     });
 
-    // Summary
-    children.push(new Paragraph({ children: [new TextRun({ text: 'Summary', bold: true, size: 28 })], heading: HeadingLevel.HEADING_1, spacing: { before: 400, after: 100 } }));
-    children.push(new Paragraph({ children: [new TextRun({ text: 'Total tasks: ' + totalAll + '  |  Completed: ' + doneAll + '  |  Remaining: ' + (totalAll - doneAll), size: 22 })], spacing: { after: 60 } }));
-    children.push(new Paragraph({ children: [new TextRun({ text: 'Overall progress: ' + (totalAll ? Math.round(doneAll / totalAll * 100) : 0) + '%', size: 22, bold: true, color: '2eb872' })], spacing: { after: 200 } }));
+    // Focus button
+    document.getElementById("modalFocusBtn").onclick = () => {
+        focusedTaskId = task.id;
+        saveState();
+        closeModal();
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
-    const doc = new Document({ sections: [{ children }] });
+    // Notes
+    const notesEl = document.getElementById("modalNotes");
+    notesEl.value = task.notes || "";
+    notesEl.oninput = () => {
+        task.notes = notesEl.value;
+        saveState();
+    };
 
-    Packer.toBlob(doc).then(blob => {
-      saveAs(blob, '30-60-90-Plan-Report.docx');
+    document.getElementById("modalOverlay").classList.remove("hidden");
+    document.getElementById("modalOverlay").classList.add("flex");
+}
+
+document.getElementById("modalClose").addEventListener("click", closeModal);
+document.getElementById("modalOverlay").addEventListener("click", e => { if(e.target === e.currentTarget) closeModal(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape") closeModal(); });
+function closeModal() {
+    document.getElementById("modalOverlay").classList.add("hidden");
+    document.getElementById("modalOverlay").classList.remove("flex");
+    currentModalTask = null;
+    render(); // Re-render to show any note icons
+}
+
+// ─── PHASE TABS ────────────────────────────────────────────────────
+document.querySelectorAll(".phase-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".phase-tab").forEach(t => { t.classList.remove("bg-blue-600","text-white"); t.classList.add("text-slate-500","dark:text-slate-400"); });
+        tab.classList.add("bg-blue-600","text-white");
+        tab.classList.remove("text-slate-500","dark:text-slate-400");
+        activePhase = tab.dataset.phase;
+        render();
     });
-  }
+});
+
+// ─── WORKSTREAM FILTERS ────────────────────────────────────────────
+document.querySelectorAll(".ws-filter").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const ws = btn.dataset.ws;
+        if (activeWorkstreams.has(ws)) { activeWorkstreams.delete(ws); btn.classList.add("opacity-40"); btn.classList.remove("active"); }
+        else { activeWorkstreams.add(ws); btn.classList.remove("opacity-40"); btn.classList.add("active"); }
+        render();
+    });
+});
+
+// ─── DARK MODE TOGGLE ──────────────────────────────────────────────
+function isDark() { return document.documentElement.classList.contains('dark'); }
+function updateThemeIcon() {
+    document.getElementById('themeIcon').innerHTML = isDark() ? '&#9790;' : '&#9728;';
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('aw-theme', isDark() ? 'dark' : 'light');
+    updateThemeIcon();
+});
+updateThemeIcon();
+
+// ─── KEYBOARD SHORTCUTS ────────────────────────────────────────────
+document.addEventListener("keydown", e => {
+    if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
+    if (e.key === "1") { document.querySelector('[data-phase="1"]').click(); }
+    if (e.key === "2") { document.querySelector('[data-phase="2"]').click(); }
+    if (e.key === "3") { document.querySelector('[data-phase="3"]').click(); }
+    if (e.key === "0") { document.querySelector('[data-phase="all"]').click(); }
+    if (e.key === "d") { document.getElementById('themeToggle').click(); }
+});
+
+// ─── INIT ──────────────────────────────────────────────────────────
+render();
 </script>
 </body>
 </html>
