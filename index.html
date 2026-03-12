@@ -8,6 +8,7 @@
     /* ── Reset & Variables ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── Dark theme (default) ── */
     :root {
       --bg:        #0f1117;
       --surface:   #1a1d2e;
@@ -21,6 +22,22 @@
       --muted:     #8890b0;
       --radius:    12px;
       --transition: 0.25s ease;
+      --header-bg: linear-gradient(135deg, #111527 0%, #1a1d2e 100%);
+      --hover-overlay: rgba(255,255,255,0.03);
+      --check-border-dim: rgba(255,255,255,0.04);
+    }
+
+    /* ── Light theme ── */
+    [data-theme="light"] {
+      --bg:        #f0f2f5;
+      --surface:   #ffffff;
+      --card:      #f7f8fa;
+      --border:    #d8dce6;
+      --text:      #1a1d2e;
+      --muted:     #5a6178;
+      --header-bg: linear-gradient(135deg, #e8ecf4 0%, #ffffff 100%);
+      --hover-overlay: rgba(0,0,0,0.03);
+      --check-border-dim: rgba(0,0,0,0.06);
     }
 
     html { scroll-behavior: smooth; }
@@ -34,7 +51,7 @@
 
     /* ── Header ── */
     header {
-      background: linear-gradient(135deg, #111527 0%, #1a1d2e 100%);
+      background: var(--header-bg);
       border-bottom: 1px solid var(--border);
       padding: 28px 32px 24px;
       position: sticky;
@@ -220,6 +237,9 @@
     .phase-header.p30 { background: linear-gradient(135deg, #1a263f, #1a1d2e); border: 1px solid #2a3a5e; }
     .phase-header.p60 { background: linear-gradient(135deg, #221a3f, #1a1d2e); border: 1px solid #3a2a5e; }
     .phase-header.p90 { background: linear-gradient(135deg, #1a3328, #1a1d2e); border: 1px solid #2a5040; }
+    [data-theme="light"] .phase-header.p30 { background: linear-gradient(135deg, #e8eef8, #f0f4ff); border-color: #c0d0ee; }
+    [data-theme="light"] .phase-header.p60 { background: linear-gradient(135deg, #ede8f8, #f4f0ff); border-color: #ccc0ee; }
+    [data-theme="light"] .phase-header.p90 { background: linear-gradient(135deg, #e8f5ee, #f0fff4); border-color: #b0d8c0; }
 
     .phase-number {
       font-size: 3rem;
@@ -275,7 +295,7 @@
       transition: var(--transition);
       user-select: none;
     }
-    .category-header:hover { background: rgba(255,255,255,0.03); }
+    .category-header:hover { background: var(--hover-overlay); }
     .category-icon { font-size: 1.2rem; }
     .category-title {
       font-size: 0.95rem;
@@ -308,12 +328,12 @@
       align-items: flex-start;
       gap: 12px;
       padding: 9px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      border-bottom: 1px solid var(--check-border-dim);
       cursor: pointer;
       transition: var(--transition);
     }
     .checklist li:last-child { border-bottom: none; }
-    .checklist li:hover { color: #fff; }
+    .checklist li:hover { color: var(--text); }
 
     .check-box {
       width: 20px;
@@ -428,6 +448,31 @@
     }
     .action-btn.primary:hover { opacity: 0.9; }
 
+    /* ── Theme Toggle ── */
+    .theme-toggle {
+      padding: 8px 14px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      line-height: 1;
+    }
+    .theme-toggle:hover { color: var(--text); border-color: var(--muted); }
+
+    /* ── Light theme tweaks ── */
+    [data-theme="light"] .check-box { border-color: #c0c8d8; }
+    [data-theme="light"] .checklist li.done .check-text { color: #a0a8b8; }
+    [data-theme="light"] .tag-ai   { background: rgba(247,201,72,0.15); }
+    [data-theme="light"] .tag-sell { background: rgba(46,184,114,0.15); }
+    [data-theme="light"] .tag-ops  { background: rgba(79,142,247,0.15); }
+    [data-theme="light"] .tag-lead { background: rgba(255,120,120,0.15); }
+    [data-theme="light"] .checklist li.pinned { background: rgba(247,201,72,0.08); }
+    [data-theme="light"] .notes-overlay { background: rgba(0,0,0,0.4); }
+    [data-theme="light"] footer { color: var(--muted); }
+
     /* ── Notes Modal ── */
     .notes-overlay {
       position: fixed;
@@ -503,6 +548,7 @@
       <p>Aaron Wolf &nbsp;·&nbsp; <span>Operationalize Gen AI → ToFu Pipeline &amp; Sales Enablement</span></p>
     </div>
     <div class="header-actions">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
       <button class="action-btn primary" onclick="openNotesModal()">📝 Generate Notes</button>
       <button class="action-btn" onclick="exportDocx()">📄 Export DOCX</button>
     </div>
@@ -865,6 +911,27 @@
 <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
 <script>
+  // ── Theme Toggle ────────────────────────────────────────────────────────────
+  const THEME_KEY = '3060_90_theme';
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('themeToggle').textContent = theme === 'light' ? '☀️' : '🌙';
+    localStorage.setItem(THEME_KEY, theme);
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  }
+
+  // Apply saved theme immediately
+  (function() {
+    const saved = localStorage.getItem(THEME_KEY) || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.getElementById('themeToggle').textContent = saved === 'light' ? '☀️' : '🌙';
+  })();
+
   // ── State Management (localStorage) ──────────────────────────────────────────
   const KEY = '3060_90_state';
 
