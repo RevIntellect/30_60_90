@@ -382,12 +382,111 @@
     footer a { color: var(--accent1); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
+    /* ── Pin Button ── */
+    .pin-btn {
+      font-size: 0.85rem;
+      cursor: pointer;
+      opacity: 0.3;
+      transition: var(--transition);
+      user-select: none;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .pin-btn:hover { opacity: 0.7; }
+    .checklist li.pinned .pin-btn { opacity: 1; filter: drop-shadow(0 0 3px var(--gold)); }
+    .checklist li.pinned {
+      border-left: 3px solid var(--gold);
+      padding-left: 8px;
+      background: rgba(247,201,72,0.04);
+      border-radius: 4px;
+    }
+
+    /* ── Action Buttons (header) ── */
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+      align-items: center;
+    }
+    .action-btn {
+      padding: 8px 16px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .action-btn:hover { color: var(--text); border-color: var(--muted); }
+    .action-btn.primary {
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      border-color: transparent;
+      color: #fff;
+    }
+    .action-btn.primary:hover { opacity: 0.9; }
+
+    /* ── Notes Modal ── */
+    .notes-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .notes-overlay.hidden { display: none; }
+    .notes-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-width: 700px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 32px;
+    }
+    .notes-modal h2 {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+    .notes-modal .notes-date {
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 20px;
+    }
+    .notes-modal pre {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .notes-modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      justify-content: flex-end;
+    }
+
     /* ── Responsive ── */
     @media (max-width: 640px) {
       header { padding: 20px 16px; }
       main { padding: 20px 16px 48px; }
       .progress-phases { grid-template-columns: 1fr; gap: 12px; }
       .phase-header { padding: 16px; }
+      .header-inner { flex-direction: column; align-items: flex-start; }
+      .header-actions { margin-left: 0; width: 100%; }
     }
   </style>
 </head>
@@ -402,6 +501,10 @@
     <div class="header-titles">
       <h1>30 · 60 · 90 Day Plan</h1>
       <p>Aaron Wolf &nbsp;·&nbsp; <span>Operationalize Gen AI → ToFu Pipeline &amp; Sales Enablement</span></p>
+    </div>
+    <div class="header-actions">
+      <button class="action-btn primary" onclick="openNotesModal()">📝 Generate Notes</button>
+      <button class="action-btn" onclick="exportDocx()">📄 Export DOCX</button>
     </div>
   </div>
 </header>
@@ -744,25 +847,76 @@
   <p>Aaron Wolf · 30-60-90 Day Gen AI Sales Plan · <a href="https://github.com/RevIntellect/30_60_90" target="_blank" rel="noopener">GitHub</a></p>
 </footer>
 
+<!-- Notes Modal -->
+<div class="notes-overlay hidden" id="notesOverlay" onclick="if(event.target===this)closeNotesModal()">
+  <div class="notes-modal">
+    <h2>Progress Notes</h2>
+    <div class="notes-date" id="notesDate"></div>
+    <pre id="notesContent"></pre>
+    <div class="notes-modal-actions">
+      <button class="action-btn" onclick="closeNotesModal()">Close</button>
+      <button class="action-btn primary" onclick="exportDocx()">📄 Export DOCX</button>
+    </div>
+  </div>
+</div>
+
+<!-- CDN Libraries for DOCX export -->
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
 <script>
   // ── State Management (localStorage) ──────────────────────────────────────────
   const KEY = '3060_90_state';
 
   function loadState() {
-    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { console.warn('30-60-90: failed to load state from localStorage', e); return {}; }
+    try {
+      const raw = JSON.parse(localStorage.getItem(KEY)) || {};
+      return migrateState(raw);
+    } catch (e) { console.warn('30-60-90: failed to load state from localStorage', e); return {}; }
   }
 
-  function saveState(state) {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { console.warn('30-60-90: failed to save state to localStorage', e); }
+  // Migrate old format { "30-1": true } → { "30-1": { completed: true, pinned: false } }
+  function migrateState(raw) {
+    const migrated = {};
+    for (const [key, val] of Object.entries(raw)) {
+      if (typeof val === 'boolean') {
+        migrated[key] = { completed: val, pinned: false };
+      } else if (typeof val === 'object' && val !== null) {
+        migrated[key] = val;
+      }
+    }
+    return migrated;
+  }
+
+  function saveState(s) {
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { console.warn('30-60-90: failed to save state to localStorage', e); }
+  }
+
+  function isCompleted(id) {
+    return state[id] && state[id].completed;
+  }
+
+  function isPinned(id) {
+    return state[id] && state[id].pinned;
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────────
   let state = loadState();
 
+  // Inject pin buttons into every checklist item
   document.querySelectorAll('.checklist li').forEach(li => {
-    if (state[li.dataset.id]) li.classList.add('done');
+    const pinBtn = document.createElement('span');
+    pinBtn.className = 'pin-btn';
+    pinBtn.textContent = '📌';
+    pinBtn.onclick = function(e) { e.stopPropagation(); togglePin(li); };
+    li.insertBefore(pinBtn, li.firstChild);
+
+    const id = li.dataset.id;
+    if (isCompleted(id)) li.classList.add('done');
+    if (isPinned(id)) li.classList.add('pinned');
   });
 
+  reorderAllPinned();
   updateCategoryCounts();
   updateProgress();
 
@@ -787,14 +941,35 @@
   function toggleItem(li) {
     li.classList.toggle('done');
     const id = li.dataset.id;
-    if (li.classList.contains('done')) {
-      state[id] = true;
-    } else {
-      delete state[id];
-    }
+    if (!state[id]) state[id] = { completed: false, pinned: false };
+    state[id].completed = li.classList.contains('done');
+    if (!state[id].completed && !state[id].pinned) delete state[id];
     saveState(state);
     updateCategoryCounts();
     updateProgress();
+  }
+
+  // ── Pin / Unpin ───────────────────────────────────────────────────────────────
+  function togglePin(li) {
+    li.classList.toggle('pinned');
+    const id = li.dataset.id;
+    if (!state[id]) state[id] = { completed: false, pinned: false };
+    state[id].pinned = li.classList.contains('pinned');
+    if (!state[id].completed && !state[id].pinned) delete state[id];
+    saveState(state);
+    reorderAllPinned();
+  }
+
+  function reorderAllPinned() {
+    document.querySelectorAll('.checklist').forEach(ul => {
+      const items = Array.from(ul.children);
+      const pinned = items.filter(li => li.classList.contains('pinned'));
+      const unpinned = items.filter(li => !li.classList.contains('pinned'));
+      pinned.forEach(li => ul.appendChild(li));
+      unpinned.forEach(li => ul.appendChild(li));
+      // Move pinned to top
+      pinned.forEach(li => ul.insertBefore(li, ul.firstChild));
+    });
   }
 
   // ── Toggle Category ───────────────────────────────────────────────────────────
@@ -807,9 +982,12 @@
     if (!confirm('Reset all progress for Phase ' + phase + '?')) return;
     document.querySelectorAll('#panel-' + phase + ' .checklist li').forEach(li => {
       li.classList.remove('done');
-      delete state[li.dataset.id];
+      li.classList.remove('pinned');
+      const id = li.dataset.id;
+      delete state[id];
     });
     saveState(state);
+    reorderAllPinned();
     updateCategoryCounts();
     updateProgress();
   }
@@ -841,7 +1019,6 @@
       doneAll  += done.length;
     });
 
-    // Count AI-tagged items done across all phases
     document.querySelectorAll('.checklist li.done .tag-ai').forEach(() => doneAI++);
 
     const overallPct = totalAll ? Math.round(doneAll / totalAll * 100) : 0;
@@ -850,6 +1027,128 @@
     document.getElementById('kpi-done').textContent = doneAll;
     document.getElementById('kpi-pct').textContent  = overallPct + '%';
     document.getElementById('kpi-ai').textContent   = doneAI;
+  }
+
+  // ── Generate Notes ────────────────────────────────────────────────────────────
+  function generateNotes() {
+    const phaseNames = { '30': 'Phase 1: Learn & Lay the Foundation (Days 1-30)', '60': 'Phase 2: Build & Execute (Days 31-60)', '90': 'Phase 3: Scale & Optimize (Days 61-90)' };
+    let notes = '30-60-90 DAY PLAN — PROGRESS REPORT\nAaron Wolf · Operationalize Gen AI → ToFu Pipeline & Sales Enablement\n';
+    notes += 'Generated: ' + new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + '\n';
+    notes += '═'.repeat(60) + '\n\n';
+
+    let totalAll = 0, doneAll = 0, pinnedAll = 0;
+
+    ['30','60','90'].forEach(phase => {
+      const panel = document.getElementById('panel-' + phase);
+      const items = panel.querySelectorAll('.checklist li');
+      const done  = panel.querySelectorAll('.checklist li.done');
+      const pinned = panel.querySelectorAll('.checklist li.pinned');
+      const pct = items.length ? Math.round(done.length / items.length * 100) : 0;
+
+      totalAll += items.length;
+      doneAll  += done.length;
+      pinnedAll += pinned.length;
+
+      notes += phaseNames[phase] + '\n';
+      notes += 'Progress: ' + done.length + '/' + items.length + ' (' + pct + '%)\n';
+      if (pinned.length > 0) notes += 'Pinned: ' + pinned.length + ' task(s)\n';
+      notes += '─'.repeat(50) + '\n';
+
+      // Group by category
+      panel.querySelectorAll('.category').forEach(cat => {
+        const catTitle = cat.querySelector('.category-title').textContent;
+        notes += '\n  ' + catTitle + '\n';
+        cat.querySelectorAll('.checklist li').forEach(li => {
+          const text = li.querySelector('.check-text').textContent;
+          const isDone = li.classList.contains('done');
+          const isPin = li.classList.contains('pinned');
+          const prefix = isDone ? '  ✅' : '  ⬜';
+          const pinMark = isPin ? ' 📌' : '';
+          notes += prefix + ' ' + text + pinMark + '\n';
+        });
+      });
+      notes += '\n';
+    });
+
+    notes += '═'.repeat(60) + '\n';
+    notes += 'SUMMARY\n';
+    notes += 'Total tasks: ' + totalAll + ' | Completed: ' + doneAll + ' | Remaining: ' + (totalAll - doneAll) + '\n';
+    notes += 'Overall progress: ' + (totalAll ? Math.round(doneAll / totalAll * 100) : 0) + '%\n';
+    if (pinnedAll > 0) notes += 'Pinned tasks: ' + pinnedAll + '\n';
+
+    return notes;
+  }
+
+  function openNotesModal() {
+    const notes = generateNotes();
+    document.getElementById('notesDate').textContent = new Date().toLocaleString();
+    document.getElementById('notesContent').textContent = notes;
+    document.getElementById('notesOverlay').classList.remove('hidden');
+  }
+
+  function closeNotesModal() {
+    document.getElementById('notesOverlay').classList.add('hidden');
+  }
+
+  // ── Export DOCX ───────────────────────────────────────────────────────────────
+  function exportDocx() {
+    const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } = docx;
+
+    const phaseNames = { '30': 'Phase 1: Learn & Lay the Foundation (Days 1-30)', '60': 'Phase 2: Build & Execute (Days 31-60)', '90': 'Phase 3: Scale & Optimize (Days 61-90)' };
+    const children = [];
+
+    // Title
+    children.push(new Paragraph({ children: [new TextRun({ text: '30-60-90 Day Plan — Progress Report', bold: true, size: 36 })], heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER }));
+    children.push(new Paragraph({ children: [new TextRun({ text: 'Aaron Wolf · Operationalize Gen AI → ToFu Pipeline & Sales Enablement', italics: true, size: 22, color: '666666' })], alignment: AlignmentType.CENTER }));
+    children.push(new Paragraph({ children: [new TextRun({ text: 'Generated: ' + new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }), size: 20, color: '999999' })], alignment: AlignmentType.CENTER, spacing: { after: 400 } }));
+
+    let totalAll = 0, doneAll = 0;
+
+    ['30','60','90'].forEach(phase => {
+      const panel = document.getElementById('panel-' + phase);
+      const items = panel.querySelectorAll('.checklist li');
+      const done  = panel.querySelectorAll('.checklist li.done');
+      const pct = items.length ? Math.round(done.length / items.length * 100) : 0;
+      totalAll += items.length;
+      doneAll  += done.length;
+
+      // Phase heading
+      children.push(new Paragraph({ children: [new TextRun({ text: phaseNames[phase], bold: true, size: 28 })], heading: HeadingLevel.HEADING_1, spacing: { before: 300, after: 100 } }));
+      children.push(new Paragraph({ children: [new TextRun({ text: 'Progress: ' + done.length + '/' + items.length + ' (' + pct + '%)', size: 22, color: '4f8ef7' })], spacing: { after: 200 } }));
+
+      panel.querySelectorAll('.category').forEach(cat => {
+        const catTitle = cat.querySelector('.category-title').textContent;
+        children.push(new Paragraph({ children: [new TextRun({ text: catTitle, bold: true, size: 24 })], heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 100 } }));
+
+        cat.querySelectorAll('.checklist li').forEach(li => {
+          const text = li.querySelector('.check-text').textContent;
+          const isDone = li.classList.contains('done');
+          const isPin = li.classList.contains('pinned');
+          const marker = isDone ? '✅ ' : '⬜ ';
+          const pinText = isPin ? ' [PINNED]' : '';
+
+          children.push(new Paragraph({
+            children: [
+              new TextRun({ text: marker + text, size: 20, strike: isDone, color: isDone ? '999999' : '333333' }),
+              ...(isPin ? [new TextRun({ text: pinText, size: 20, bold: true, color: 'D4A017' })] : [])
+            ],
+            spacing: { after: 60 },
+            indent: { left: 360 }
+          }));
+        });
+      });
+    });
+
+    // Summary
+    children.push(new Paragraph({ children: [new TextRun({ text: 'Summary', bold: true, size: 28 })], heading: HeadingLevel.HEADING_1, spacing: { before: 400, after: 100 } }));
+    children.push(new Paragraph({ children: [new TextRun({ text: 'Total tasks: ' + totalAll + '  |  Completed: ' + doneAll + '  |  Remaining: ' + (totalAll - doneAll), size: 22 })], spacing: { after: 60 } }));
+    children.push(new Paragraph({ children: [new TextRun({ text: 'Overall progress: ' + (totalAll ? Math.round(doneAll / totalAll * 100) : 0) + '%', size: 22, bold: true, color: '2eb872' })], spacing: { after: 200 } }));
+
+    const doc = new Document({ sections: [{ children }] });
+
+    Packer.toBlob(doc).then(blob => {
+      saveAs(blob, '30-60-90-Plan-Report.docx');
+    });
   }
 </script>
 </body>
